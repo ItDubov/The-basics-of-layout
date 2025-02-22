@@ -1,0 +1,50 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Главная - Лейдинг{% endblock %}
+
+{% block content %}
+    <h1>Добро пожаловать на наш сайт!</h1>
+    <p>Здесь вы найдете все необходимое для комфортных покупок!</p>
+
+    <h2>Наш каталог</h2>
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-4">
+                <div class="card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Нет изображения">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                        <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>Товары не найдены.</p>
+        {% endfor %}
+    </div>
+
+    <h2>Контакты</h2>
+    <p>Свяжитесь с нами по указанным контактам или заполните форму для отправки сообщения.</p>
+
+    <form action="#" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Ваше имя</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="Введите ваше имя" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Введите ваш email" required>
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">Сообщение</label>
+            <textarea class="form-control" id="message" name="message" rows="4" placeholder="Введите ваше сообщение" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+{% endblock %}
