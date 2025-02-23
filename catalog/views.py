@@ -1,13 +1,26 @@
-from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView, TemplateView, DetailView
 from .models import Product
+from blog.models import BlogPost
 
-def home(request):
-    products = Product.objects.all()
-    return render(request, 'catalog/home.html', {'products': products})
+class HomePageView(ListView):
+    model = Product
+    template_name = 'catalog/home.html'
+    context_object_name = 'products'  # Имя контекста, которое будет использоваться в шаблоне
 
-def contacts(request):
-    return render(request, 'catalog/contacts.html')
+class ContactPageView(TemplateView):
+    template_name = 'catalog/contacts.html'
 
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    return render(request, 'catalog/product_detail.html', {'product': product})
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
+
+class BlogPostDetailView(DetailView):
+    model = BlogPost
+    template_name = 'catalog/blog_post_detail.html'
+
+    def get_object(self, queryset=None):
+        blog_post = super().get_object(queryset)
+        blog_post.views_count += 1
+        blog_post.save()
+        return blog_post
