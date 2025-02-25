@@ -1,6 +1,24 @@
-{% for post in object_list %}
-    <h2><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a></h2>
-    <p>{{ post.content|truncatewords:20 }}</p>
-{% empty %}
-    <p>Нет опубликованных постов.</p>
-{% endfor %}
+{% extends "catalog/base.html" %}
+
+{% block title %}Блог{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Блог</h1>
+
+    <a href="{% url 'blog:post_create' %}" class="btn btn-primary mb-3">Создать пост</a>
+
+    {% if object_list %}
+        <div class="list-group">
+            {% for post in object_list %}
+                <a href="{% url 'blog:post_detail' post.pk %}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">{{ post.title }}</h5>
+                    <small class="text-muted">{{ post.created_at }}</small>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Нет опубликованных постов.</p>
+    {% endif %}
+</div>
+{% endblock %}

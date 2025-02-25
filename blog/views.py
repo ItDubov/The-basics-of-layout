@@ -7,6 +7,12 @@ class BlogPostDetailView(DetailView):
     template_name = 'blog/blog_post_detail.html'
     context_object_name = 'blog_post'
 
+    def get_object(self, queryset=None):
+        blog_post = super().get_object(queryset)
+        blog_post.views_count += 1
+        blog_post.save()
+        return blog_post
+
 
 # Список всех записей
 class BlogPostListView(ListView):
@@ -36,8 +42,9 @@ class BlogPostUpdateView(UpdateView):
     success_url = reverse_lazy('blog:post_list')  # Перенаправление на список после успешного редактирования
 
 
-# Удаление записи
 class BlogPostDeleteView(DeleteView):
     model = BlogPost
     template_name = 'blog/blog_post_confirm_delete.html'
     success_url = reverse_lazy('blog:post_list')
+    context_object_name = 'blog_post'
+
