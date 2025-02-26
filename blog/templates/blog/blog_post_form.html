@@ -1,0 +1,32 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Создать запись блога{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-3">Создать запись блога</h1>
+
+    <div class="card p-4 shadow-sm">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.title.label_tag }}
+                {{ form.title }}
+            </div>
+            <div class="mb-3">
+                {{ form.content.label_tag }}
+                {{ form.content }}
+            </div>
+            <div class="mb-3">
+                {{ form.preview.label_tag }}
+                {{ form.preview }}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.is_published.label_tag }}
+                {{ form.is_published }}
+            </div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
