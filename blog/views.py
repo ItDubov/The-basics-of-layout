@@ -1,4 +1,4 @@
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from .models import BlogPost
 
@@ -32,15 +32,14 @@ class BlogPostCreateView(CreateView):
     # Перенаправление после создания
     success_url = reverse_lazy('blog:post_list')
 
-
 # Обновление записи
 class BlogPostUpdateView(UpdateView):
     model = BlogPost
     template_name = 'blog/blog_post_form.html'
     fields = ['title', 'content', 'preview', 'is_published']
 
-    success_url = reverse_lazy('blog:post_list')  # Перенаправление на список после успешного редактирования
-
+    def get_success_url(self):
+        return reverse('blog:post_detail', kwargs={'pk': self.object.pk})
 
 class BlogPostDeleteView(DeleteView):
     model = BlogPost
