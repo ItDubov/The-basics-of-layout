@@ -31,22 +31,22 @@ class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
-    success_url = reverse_lazy('home')  # После создания продукта возвращаемся на главную
+    success_url = reverse_lazy('products:product_list')
 
 # Редактирование продукта
 class ProductUpdateView(UpdateView):
     model = Product
-    form_class = ProductForm
+    fields = ['name', 'description', 'price', 'image', 'category']
     template_name = 'catalog/product_form.html'
 
     def get_success_url(self):
-        return reverse_lazy('product_detail', kwargs={'pk': self.object.pk})  # После редактирования переходим на страницу товара
+        return reverse_lazy('products:product_detail', kwargs={'pk': self.object.pk})  # После редактирования переходим на страницу товара
 
 # Удаление продукта
 class ProductDeleteView(DeleteView):
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
-    success_url = reverse_lazy('home')  # После удаления возвращаемся на главную
+    success_url = reverse_lazy('products:product_list')
 
 # Пример ProductListView
 class ProductListView(ListView):
