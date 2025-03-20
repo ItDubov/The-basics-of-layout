@@ -1,7 +1,7 @@
 from django.db import models
 
 class Category(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Наименование")
+    name = models.CharField(max_length=255, unique=True, verbose_name="Название категории")
     description = models.TextField(blank=True, verbose_name="Описание")
 
     class Meta:

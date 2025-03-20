@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import (
-    HomePageView, ContactPageView, ProductDetailView,
+    home_redirect, ContactPageView, ProductDetailView,
     ProductCreateView, ProductUpdateView, ProductDeleteView,
     ProductListView
 )
@@ -10,8 +10,8 @@ from .views import (
 app_name = 'products'  # Добавляем пространство имен
 
 urlpatterns = [
-    path('', HomePageView.as_view(), name='home'),
-    path('contacts/', ContactPageView.as_view(), name='contacts'),
+    path('', home_redirect, name='home'),
+    path('contacts/', ContactPageView.as_view(), name='contacts'),  # Страница контактов
 
     # Просмотр деталей продукта
     path('product/<int:pk>/', ProductDetailView.as_view(), name='product_detail'),
@@ -29,6 +29,6 @@ urlpatterns = [
     path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
 ]
 
-# Подключаем обработку медиафайлов
+# Обработка медиафайлов в режиме разработки
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

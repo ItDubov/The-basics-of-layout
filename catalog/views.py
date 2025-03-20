@@ -1,14 +1,23 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.shortcuts import render, redirect
+from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView, DeleteView, FormView
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.contrib.auth import login
 from .models import Product
-from .forms import ProductForm
+from users.forms import  RegisterForm
+from catalog.forms import ProductForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Product, Category
 
-# Главная страница (список продуктов)
-class HomePageView(ListView):
-    model = Product
+# Перенаправление на регистрацию для неавторизованных пользователей
+@login_required
+def home_redirect(request):
+    return render(request, 'catalog/home.html')
+
+# Главная страница (доступ только для авторизованных пользователей)
+class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = 'catalog/home.html'
-    context_object_name = 'products'  # Имя контекста, которое будет использоваться в шаблоне
 
 # Страница контактов
 class ContactPageView(TemplateView):
@@ -23,10 +32,11 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if 'form' not in context:
-            context['form'] = ProductForm()  # Передаем форму, если нужно будет добавлять функциональность
+            context['form'] = ProductForm()
         return context
 
-# Создание продукта (используем FormView с ProductForm)
+# Создание продукта (только авторизованные пользователи)
+@method_decorator(login_required, name='dispatch')
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
@@ -34,22 +44,48 @@ class ProductCreateView(CreateView):
     success_url = reverse_lazy('products:product_list')
 
 # Редактирование продукта
+@method_decorator(login_required, name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     fields = ['name', 'description', 'price', 'image', 'category']
     template_name = 'catalog/product_form.html'
 
     def get_success_url(self):
-        return reverse_lazy('products:product_detail', kwargs={'pk': self.object.pk})  # После редактирования переходим на страницу товара
+        return reverse_lazy('products:product_detail', kwargs={'pk': self.object.pk})
 
 # Удаление продукта
+@method_decorator(login_required, name='dispatch')
 class ProductDeleteView(DeleteView):
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('products:product_list')
 
-# Пример ProductListView
+# Список продуктов
+@method_decorator(login_required, name='dispatch')
 class ProductListView(ListView):
     model = Product
     template_name = 'catalog/product_list.html'
     context_object_name = 'products'
+
+# Форма регистрации
+class RegisterView(FormView):
+    template_name = 'user/register.html'
+    form_class = RegisterForm
+    success_url = reverse_lazy('products:product_list')
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)  # Автовход после регистрации
+        return redirect(self.get_success_url())
+
+
+def product_list(request):
+    category_id = request.GET.get('category')
+    categories = Category.objects.all()
+
+    if category_id:
+        products = Product.objects.filter(category_id=category_id)
+    else:
+        products = Product.objects.all()
+
+    return render(request, 'catalog/product_list.html', {'products': products, 'categories': categories})
