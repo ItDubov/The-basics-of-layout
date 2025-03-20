@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
@@ -7,19 +7,17 @@ from django.contrib.auth import login
 from .models import Product
 from users.forms import  RegisterForm
 from catalog.forms import ProductForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Product, Category
 
 # Перенаправление на регистрацию для неавторизованных пользователей
+@login_required
 def home_redirect(request):
-    if request.user.is_authenticated:
-        return redirect('products:product_list')  # Перенаправление на главную страницу после входа
-    return redirect('users:register')
+    return render(request, 'catalog/home.html')
 
 # Главная страница (доступ только для авторизованных пользователей)
-@method_decorator(login_required, name='dispatch')
-class HomePageView(ListView):
-    model = Product
+class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = 'catalog/home.html'
-    context_object_name = 'products'
 
 # Страница контактов
 class ContactPageView(TemplateView):
@@ -79,3 +77,15 @@ class RegisterView(FormView):
         user = form.save()
         login(self.request, user)  # Автовход после регистрации
         return redirect(self.get_success_url())
+
+
+def product_list(request):
+    category_id = request.GET.get('category')
+    categories = Category.objects.all()
+
+    if category_id:
+        products = Product.objects.filter(category_id=category_id)
+    else:
+        products = Product.objects.all()
+
+    return render(request, 'catalog/product_list.html', {'products': products, 'categories': categories})

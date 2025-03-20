@@ -102,9 +102,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 AUTH_USER_MODEL = 'users.CustomUser'
 
 # Настройки аутентификации
-LOGIN_REDIRECT_URL = '/products/'  
-LOGOUT_REDIRECT_URL = '/register/'  
+LOGIN_REDIRECT_URL = '/users/login/'
+LOGOUT_REDIRECT_URL = '/users/login/'
 LOGIN_URL = '/users/register/'
 
 # CORS (если работаешь с фронтендом)
 CORS_ALLOW_ALL_ORIGINS = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Для Gmail, можно заменить на Mail.ru или Yandex
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'viktor.dubov.2007@gmail.com'
+EMAIL_HOST_PASSWORD = 'fecrep-pizkix-0Cerbi'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

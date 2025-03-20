@@ -11,7 +11,7 @@ from .forms import RegisterForm
 class RegisterView(FormView):
     template_name = 'user/register.html'
     form_class = RegisterForm
-    success_url = reverse_lazy('products:product_list')  # Укажите нужный путь после регистрации
+    success_url = reverse_lazy('products:product_list')
 
     def form_valid(self, form):
         # Сохраняем пользователя
@@ -36,4 +36,4 @@ class CustomLoginView(LoginView):
     template_name = 'user/login.html'
 
     def get_success_url(self):
-        return reverse_lazy('products:product_list')  # Укажите путь, куда пользователю нужно попасть после входа
+        return reverse_lazy('products:product_list')
