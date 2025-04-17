@@ -116,3 +116,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'viktor.dubov.2007@gmail.com'
 EMAIL_HOST_PASSWORD = 'fecrep-pizkix-0Cerbi'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
