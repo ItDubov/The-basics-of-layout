@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView, DeleteView, FormView
 from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login
-from .models import Product
 from users.forms import  RegisterForm
 from catalog.forms import ProductForm
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Product, Category
+from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseForbidden
 
 # Перенаправление на регистрацию для неавторизованных пользователей
 @login_required
@@ -37,15 +39,30 @@ class ProductDetailView(DetailView):
 
 # Создание продукта (только авторизованные пользователи)
 @method_decorator(login_required, name='dispatch')
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('products:product_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+@login_required
+def unpublish_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    if not request.user.has_perm('catalog.can_unpublish_product'):
+        return HttpResponseForbidden("У вас нет прав на снятие с публикации.")
+
+    product.is_published = False
+    product.save()
+    return redirect('products:product_list')
+
 # Редактирование продукта
 @method_decorator(login_required, name='dispatch')
-class ProductUpdateView(UpdateView):
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Product
     fields = ['name', 'description', 'price', 'image', 'category']
     template_name = 'catalog/product_form.html'
@@ -53,12 +70,21 @@ class ProductUpdateView(UpdateView):
     def get_success_url(self):
         return reverse_lazy('products:product_detail', kwargs={'pk': self.object.pk})
 
+    def test_func(self):
+        product = self.get_object()
+        return self.request.user == product.owner
+
 # Удаление продукта
 @method_decorator(login_required, name='dispatch')
-class ProductDeleteView(DeleteView):
+class ProductDeleteView(PermissionRequiredMixin, DeleteView):
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('products:product_list')
+    permission_required = 'catalog.delete_product'
+
+    def test_func(self):
+        product = self.get_object()
+        return self.request.user == product.owner or self.request.user.has_perm('catalog.delete_product')
 
 # Список продуктов
 @method_decorator(login_required, name='dispatch')

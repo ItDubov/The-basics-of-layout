@@ -25,8 +25,16 @@
                         </div>
                         <div class="card-footer text-center">
                             <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-primary">Подробнее</a>
-                            {% if user.is_authenticated %}
+
+                            {% if user.is_authenticated and user == product.owner %}
                                 <a href="{% url 'products:product_edit' product.pk %}" class="btn btn-warning">Редактировать</a>
+                            {% endif %}
+
+                            {% if perms.catalog.can_unpublish_product %}
+                                <a href="{% url 'products:unpublish' product.pk %}" class="btn btn-secondary">Снять с публикации</a>
+                            {% endif %}
+
+                            {% if user == product.owner or perms.catalog.delete_product %}
                                 <a href="{% url 'products:product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
                             {% endif %}
                         </div>
