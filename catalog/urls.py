@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from .views import (
     home_redirect, ContactPageView, ProductDetailView,
     ProductCreateView, ProductUpdateView, ProductDeleteView,
-    ProductListView
+    ProductListView, unpublish_product
 )
 
 app_name = 'products'  # Добавляем пространство имен
@@ -27,6 +27,8 @@ urlpatterns = [
 
     # Удаление продукта
     path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
+
+    path('products/<int:pk>/unpublish/', unpublish_product, name='unpublish'),
 ]
 
 # Обработка медиафайлов в режиме разработки
