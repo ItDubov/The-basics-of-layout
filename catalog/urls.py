@@ -4,7 +4,7 @@ from django.conf.urls.static import static
 from .views import (
     home_redirect, ContactPageView, ProductDetailView,
     ProductCreateView, ProductUpdateView, ProductDeleteView,
-    ProductListView, unpublish_product
+    ProductListView, unpublish_product, CategoryProductListView
 )
 
 app_name = 'products'  # Добавляем пространство имен
@@ -29,6 +29,9 @@ urlpatterns = [
     path('product/<int:pk>/delete/', ProductDeleteView.as_view(), name='product_delete'),
 
     path('products/<int:pk>/unpublish/', unpublish_product, name='unpublish'),
+
+    path('category/<int:category_id>/products/', CategoryProductListView.as_view(), name='products_by_category'),
+
 ]
 
 # Обработка медиафайлов в режиме разработки

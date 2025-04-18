@@ -11,6 +11,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Product, Category
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseForbidden
+from django.views.decorators.cache import cache_page
+from django.conf import settings
+from .services import get_products_by_category
+from django.core.cache import cache
+
 
 # Перенаправление на регистрацию для неавторизованных пользователей
 @login_required
@@ -26,6 +31,7 @@ class ContactPageView(TemplateView):
     template_name = 'catalog/contacts.html'
 
 # Детальная страница продукта
+@method_decorator(cache_page(settings.CACHE_TTL), name='dispatch')
 class ProductDetailView(DetailView):
     model = Product
     template_name = 'catalog/product_detail.html'
@@ -109,9 +115,24 @@ def product_list(request):
     category_id = request.GET.get('category')
     categories = Category.objects.all()
 
-    if category_id:
-        products = Product.objects.filter(category_id=category_id)
-    else:
-        products = Product.objects.all()
+    cache_key = f'products_all_{category_id or "all"}'
+    products = cache.get(cache_key)
 
-    return render(request, 'catalog/product_list.html', {'products': products, 'categories': categories})
+    if not products:
+        if category_id:
+            products = Product.objects.filter(category_id=category_id)
+        else:
+            products = Product.objects.all()
+        cache.set(cache_key, products, timeout=settings.CACHE_TTL)
+
+    return render(request, 'catalog/product_list.html', {
+        'products': products,
+        'categories': categories
+    })
+
+class CategoryProductListView(ListView):
+    template_name = 'catalog/products_by_category.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        return get_products_by_category(self.kwargs['category_id'])
